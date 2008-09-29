@@ -1,4 +1,8 @@
 
+#use "topfind";;
+#require "fileutils";;
+#require "findlib";;
+
 let () = 
   Findlib.init ()
 ;;
