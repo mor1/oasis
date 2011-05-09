@@ -24,13 +24,13 @@ open OASISGettext
 open OASISContext
 
 let generic_message ~ctxt lvl fmt =
-  let cond = 
-    match lvl with 
+  let cond =
+    match lvl with
       | `Debug -> ctxt.debug
       | _ -> ctxt.verbose
   in
-    Printf.ksprintf 
-      (fun str -> 
+    Printf.ksprintf
+      (fun str ->
          if cond then
            begin
              ctxt.printf lvl str
@@ -40,7 +40,7 @@ let generic_message ~ctxt lvl fmt =
 let debug ~ctxt fmt =
   generic_message ~ctxt `Debug fmt
 
-let info ~ctxt fmt = 
+let info ~ctxt fmt =
   generic_message ~ctxt `Info fmt
 
 let warning ~ctxt fmt =
@@ -50,10 +50,10 @@ let error ~ctxt fmt =
   generic_message ~ctxt `Error fmt
 
 
-let string_of_exception e = 
-  try 
+let string_of_exception e =
+  try
     PropList.string_of_exception e
-  with 
+  with
     | Failure s ->
         s
     | e ->
