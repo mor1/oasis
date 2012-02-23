@@ -572,6 +572,35 @@ let add_ocamlbuild_files ctxt pkg =
                      ["include"]
                  in
 
+                 let tag_t =
+                   if lib.lib_pack then
+                     let fnames =
+                       List.fold_left
+                         (fun acc s ->
+                           (FilePath.UnixPath.add_extension s "cmx")
+                           :: (FilePath.UnixPath.add_extension
+                                 (String.uncapitalize s)
+                                 "cmx")
+                           :: acc)
+                         []
+                         lib.lib_modules
+                     in
+                     add_tags
+                       tag_t
+                       (List.fold_left
+                          (fun acc dn ->
+                            List.fold_left
+                              (fun acc fn ->
+                                Filename.concat dn fn :: acc)
+                              acc
+                              fnames)
+                          []
+                          (src_dirs @ src_internal_dirs))
+                       ["for-pack(" ^ String.capitalize cs.cs_name ^ ")"]
+                   else
+                     tag_t
+                 in
+
                  let ctxt, tag_t, myocamlbuild_t =
                    bs_tags
                      pkg sct cs bs
@@ -601,13 +630,19 @@ let add_ocamlbuild_files ctxt pkg =
                  in
 
                  let ctxt =
-                   (* Generate .mllib files *)
+                   (* Generate .mllib or .mlpack files *)
+                   let extension =
+                     if lib.lib_pack then
+                       "mlpack"
+                     else
+                       "mllib"
+                   in
                    let fn_base =
                      prepend_bs_path bs cs.cs_name
                    in
                      add_file
                        (template_make
-                          (FilePath.add_extension fn_base "mllib")
+                          (FilePath.add_extension fn_base extension)
                           comment_ocamlbuild
                           []
                           (lib.lib_modules @ lib.lib_internal_modules)

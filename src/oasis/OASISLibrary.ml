@@ -69,14 +69,18 @@ let generated_unix_files ~ctxt (cs, bs, lib)
 
   (* The headers that should be compiled along *)
   let headers =
-    find_modules
-      lib.lib_modules
-      "cmi"
+    if lib.lib_pack then
+      []
+    else
+      find_modules
+        lib.lib_modules
+        "cmi"
   in
 
   (* The .cmx that be compiled along *)
   let cmxs =
     let should_be_built =
+      (not lib.lib_pack) && (* Do not install .cmx packed submodules *)
       match bs.bs_compiled_object with
         | Native -> true
         | Best -> is_native ()
@@ -96,11 +100,18 @@ let generated_unix_files ~ctxt (cs, bs, lib)
 
   (* Compute what libraries should be built *)
   let acc_nopath =
+    (* Add the packed header file if required *)
+    let add_pack_header acc =
+      if lib.lib_pack then
+        [cs.cs_name^".cmi"] :: acc
+      else
+        acc
+    in
     let byte acc =
-      [cs.cs_name^".cma"] :: acc
+      add_pack_header ([cs.cs_name^".cma"] :: acc)
     in
     let native acc =
-      [cs.cs_name^".cmxa"] :: [cs.cs_name^(ext_lib ())] :: acc
+      add_pack_header ([cs.cs_name^".cmxa"] :: [cs.cs_name^(ext_lib ())] :: acc)
     in
       match bs.bs_compiled_object with
         | Native ->

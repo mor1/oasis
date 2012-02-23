@@ -134,34 +134,37 @@ let install pkg argv =
               List.rev_append lib_extra acc
             in
             let acc =
-              (* Add uncompiled header from the source tree *)
-              let path =
-                BaseFilePath.of_unix bs.bs_path
-              in
-                List.fold_left
-                  (fun acc modul ->
-                     try
-                       List.find
-                         Sys.file_exists
-                         (List.map
-                            (Filename.concat path)
-                            [modul^".mli";
-                             modul^".ml";
-                             OASISUnixPath.uncapitalize_file modul^".mli";
-                             OASISUnixPath.capitalize_file   modul^".mli";
-                             OASISUnixPath.uncapitalize_file modul^".ml";
-                             OASISUnixPath.capitalize_file   modul^".ml"])
-                       :: acc
-                     with Not_found ->
-                       begin
-                         warning
-                           (f_ "Cannot find source header for module %s \
-                                in library %s")
-                           modul cs.cs_name;
-                         acc
-                       end)
-                  acc
-                  lib.lib_modules
+              if lib.lib_pack then
+                acc
+              else
+                (* Add uncompiled header from the source tree (for non-packed libraries) *)
+                let path = 
+                  BaseFilePath.of_unix bs.bs_path
+                in
+                  List.fold_left
+                    (fun acc modul ->
+                       try 
+                         List.find
+                           Sys.file_exists 
+                           (List.map
+                              (Filename.concat path)
+                              [modul^".mli";
+                               modul^".ml";
+                               String.uncapitalize modul^".mli";
+                               String.capitalize   modul^".mli";
+                               String.uncapitalize modul^".ml";
+                               String.capitalize   modul^".ml"])
+                         :: acc
+                       with Not_found ->
+                         begin
+                           warning 
+                             (f_ "Cannot find source header for module %s \
+                                  in library %s")
+                             modul cs.cs_name;
+                           acc
+                         end)
+                    acc
+                    lib.lib_modules
             in
 
             let acc =
